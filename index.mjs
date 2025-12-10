@@ -58,8 +58,8 @@ app.post("/analyze", async (req, res) => {
               ## RESPONSE TEMPLATE
               Use this structure for your answer:
 
-              🤖 **Item:** [Name + material type]  
-              ✅ **How to prepare:**
+              **Item:** [Name + material type]  
+              **How to prepare:**
               1. [Action 1]
               2. [Action 2]  
               🗑 **Where to throw:** [Type of bin]  

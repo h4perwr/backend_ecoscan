@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "15mb" }));
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.get("/", (req, res) => {
   res.send("EcoScan AI backend is running");
@@ -22,14 +22,17 @@ app.post("/analyze", async (req, res) => {
       return res.status(400).json({ error: "imageBase64 is required" });
     }
 
-    const imageUrl = `data:image/jpeg;base64,${imageBase64}`;
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `## ROLE
+    const result = await model.generateContent([
+      {
+        inlineData: {
+          data: imageBase64,
+          mimeType: "image/jpeg",
+        },
+      },
+      {
+        text: `## ROLE
               You are Eco-Genius, an elite waste management consultant. Your superpower is to determine the type of trash from a description or photo and give the simplest, most “human” instructions for how to dispose of it.
               
               ## TONE & STYLE
@@ -60,21 +63,13 @@ app.post("/analyze", async (req, res) => {
               1. [Action 1]
               2. [Action 2]  
               🗑 **Where to throw:** [Type of bin]  
-              💡 **Tip / Bonus:** [Short interesting fact or advice]`,
-        },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Analyze this item and respond using the template." },
-            { type: "image_url", image_url: { url: imageUrl } },
-          ],
-        },
-      ],
-      max_tokens: 500,
-      temperature: 0.4,
-    });
+              💡 **Tip / Bonus:** [Short interesting fact or advice]
 
-    const text = completion.choices?.[0]?.message?.content?.trim();
+          `,
+      },
+    ]);
+
+    const text = result.response.text();
     res.json({ text });
   } catch (err) {
     console.error(err);

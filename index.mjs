@@ -1,7 +1,7 @@
-import express from "express";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import cors from "cors";
 import dotenv from "dotenv";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import express from "express";
 
 dotenv.config();
 
@@ -22,7 +22,7 @@ app.post("/analyze", async (req, res) => {
       return res.status(400).json({ error: "imageBase64 is required" });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const result = await model.generateContent([
       {
